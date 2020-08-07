@@ -1,6 +1,6 @@
 # qiling-fi
 
-Tested in WSL Ubuntu 18.04
+Tested in Ubuntu 18.04 and WSL Ubuntu 18.04
 
 # Set up qiling
 
@@ -10,6 +10,7 @@ https://docs.qiling.io/en/latest/install/
 python3 -m venv venv-wsl
 . venv\bin\activate
 python -m pip install qiling --pre
+python -m pip install tqdm
 ```
 
 # Set up arm compiler
@@ -32,22 +33,19 @@ arm-linux-gnueabi-objdump -S ifelse > ifelse.objdump
 
 `ifelse.objdump` can be used to very conveniently find addresses etc.
 
-# Run
+# Run focused random
 
 ```
 python3 ifelse_focused_random.py
 ```
 
-Two hooks:
+One hook:
 
 ```
 ql.hook_code(print_asm)
 ```
-Uses capstone to decompile `main` portions of the binary
+Uses capstone to decompile portions of the binary, useful for tracing
 
-```
-ql.hook_address(patch, 0x101b0)
-```
 Patch `fi_addr` with `fi_random_bytes`.
 
 Each run uses `patch` to fill a random address of the `main` block of `ifelse` with random bytes. Data is collected in `ifelse.sqlite`. 
@@ -62,7 +60,7 @@ Database contains bit more info:
 
 # SQL queries
 
-FREE BEER counts:
+FREE BEER counts with random bytes at the compare instruction:
 ```
 SELECT data,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log_1596811491505 GROUP BY data
 ```
@@ -92,3 +90,21 @@ SELECT exception,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log
 | Invalid memory write (UC_ERR_WRITE_UNMAPPED)        |  1034  | 0.0603936685941242    |
 | Write to write-protected memory (UC_ERR_WRITE_PROT) |  281   | 0.0164125927223877    |
 | _hook_intr_cb : catched == False                    |  1     | 5.84078032825185e-05  |
+
+
+# Single bit flip and single nop
+
+```
+python3 ifelse_singlebit_sequential.py
+python3 ifelse_nop_sequential.py
+```
+
+# Annotated objdump
+
+Script to parse sqlite db and add notes to the objdump (set the right TABLE_NAME manually):
+```
+python annotate_objdump.py
+```
+
+Example outputs added to repo, see also screenshot below:
+![free_beer_flip.png](free_beer_flip.png)
