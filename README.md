@@ -1,5 +1,7 @@
 # qiling-fi
 
+Using qiling to build simple scripts simulating fault models.
+
 Tested in Ubuntu 18.04 and WSL Ubuntu 18.04
 
 # Set up qiling
