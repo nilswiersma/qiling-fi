@@ -86,26 +86,6 @@ def dump(ql, *args, **kw):
 	# ql.save(snapshot='ifelse-snapshot.bin')
 	ql.emu_stop()
 
-def patch(ql):
-	global fi_random_bytes
-	global fi_addr
-	# print('--patching--')
-	# print('fi_random_bytes:', fi_random_bytes.hex())
-	# ql.mem.write(IF_ADDR, b'\x01\x00S\xe3')
-	# ql.mem.write(BRANCH_ADDR, bytes.fromhex('0200000a'))
-	buf = ql.mem.read(fi_addr, 4)
-	# for i in md.disasm(buf, IF_ADDR):
-	# 	print("<: 0x%x:\t%s\t%s" %(i.address, i.mnemonic, i.op_str))
-
-	# ql.mem.write(IF_ADDR, bytes.fromhex('0200000a'))#os.urandom(4))
-	# ql.mem.write(IF_ADDR, bytes.fromhex('32fb3209'))#os.urandom(4))
-	ql.mem.write(fi_addr, fi_random_bytes)
-	
-	buf = ql.mem.read(fi_addr, 4)
-	# for i in md.disasm(buf, IF_ADDR):
-	# 	print(">: 0x%x:\t%s\t%s" %(i.address, i.mnemonic, i.op_str))
-	return
-
 if __name__ == "__main__":
 	### https://github.com/qilingframework/qiling/issues/375, does not seem to be 
 	##  implemented in master or dev yet
@@ -142,7 +122,7 @@ if __name__ == "__main__":
 		fi_random_bytes = os.urandom(4)
 
 		## Cannot apply patch before MAIN_ADDR, needs to be before
-		ql.hook_address(patch, 0x101b0)
+		ql.mem.write(fi_addr, fi_random_bytes)
 
 		try:
 			ql.run(timeout=100000)

@@ -1,5 +1,6 @@
 ifelse
-ifelse.sqlite
+*.sqlite
+*.sqlite-journal
 ifelse.objdump
 
 # Byte-compiled / optimized / DLL files
