@@ -55,7 +55,7 @@ While executing counters are printed:
 
 Database contains bit more info:
 ```
-[database.png](database.png)
+![database.png](database.png)
 ```
 
 # SQL queries
