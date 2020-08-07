@@ -34,6 +34,10 @@ arm-linux-gnueabi-objdump -S ifelse > ifelse.objdump
 
 # Run
 
+```
+python3 ifelse.py
+```
+
 Two hooks:
 
 ```
