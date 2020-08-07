@@ -60,19 +60,12 @@ While executing counters are printed:
 Database contains bit more info:
 ![database.png](database.png)
 
-# SQL queries
+# SQL queries and results with random bytes
 
 FREE BEER counts with random bytes at the compare instruction:
 ```
 SELECT data,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log_1596811491505 GROUP BY data
 ```
-
-Exception counts:
-```
-SELECT exception,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log_1596811491505 GROUP BY exception
-```
-
-# Some results
 |  Output                  | Count |  Frac                 |
 |--------------------------|-------|-----------------------|
 |                          | 8763  | 0.605137766728817     |
@@ -84,6 +77,10 @@ SELECT exception,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log
 |NO BEER\x0a               | 1786  | 0.123334023893378     |
 |NO BEER\x0aFREE BEER\x0a  | 130   | 0.00897728057454596   |
 
+Exception counts:
+```
+SELECT exception,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log_1596811491505 GROUP BY exception
+```
 |  Exception                                          |  Count |  Frac                 |
 |-----------------------------------------------------|--------|-----------------------|
 | 	                                                  |  11261 | 0.657730272764441     |
