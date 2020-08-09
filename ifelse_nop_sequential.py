@@ -7,6 +7,8 @@ import qiling
 
 import sqlite3
 
+from stringbuffer import StringBuffer
+
 # md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_64)
 md = capstone.Cs(capstone.CS_ARCH_ARM, capstone.CS_MODE_ARM)
 
@@ -32,28 +34,6 @@ FREE_BEER = 0
 EXCEPTION = 0
 
 console = False
-
-
-class StringBuffer:
-    def __init__(self):
-        self.buffer = b''
-
-    def read(self, n):
-        ret = self.buffer[:n]
-        self.buffer = self.buffer[n:]
-        return ret
-
-    def read_all(self):
-        ret = self.buffer
-        self.buffer = b''
-        return ret
-
-    def write(self, string):
-        self.buffer += string
-        return len(string)
-
-    def fstat(self): # syscall fstat will ignore it if return -1
-        return -1
 
 
 def print_asm(ql, address, size):
@@ -93,25 +73,6 @@ def dump(ql, *args, **kw):
 	ql.emu_stop()
 
 if __name__ == "__main__":
-	### https://github.com/qilingframework/qiling/issues/375, does not seem to be 
-	##  implemented in master or dev yet
-
-	# first execution up until snapshot location
-	# ql = qiling.Qiling(["ifelse"], ".")
-	# ql.hook_address(dump, MAIN_ADDR)
-	# ql.run()
-
-	# ql = qiling.Qiling(["ifelse"], ".")
-	# ql.restore(snapshot='ifelse-snapshot.bin')
-
-	# ql = qiling.Qiling(["ifelse"], ".")
-	# ql.hook_code(print_asm)
-	# # ql.hook_address(patch, MAIN_ADDR)
-	# # Cannot apply patch before MAIN_ADDR, needs to be before
-	# ql.hook_address(patch, 0x101b0)
-	# # ql.hook_address(patch, ql.loader.elf_entry)
-	# ql.run()
-
 	con = sqlite3.connect(f'{__file__}.sqlite')
 	cur = con.cursor()
 	table = f'log_{int(time.time()*1000)}'
