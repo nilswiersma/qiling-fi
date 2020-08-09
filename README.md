@@ -37,6 +37,8 @@ arm-linux-gnueabi-objdump -S ifelse > ifelse.objdump
 
 # Run focused random
 
+!!! BELOW OUTDATED !!!
+
 ```
 python3 ifelse_focused_random.py
 ```
