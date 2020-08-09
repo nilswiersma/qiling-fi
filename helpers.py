@@ -49,12 +49,12 @@ class MyDB():
 		qms = ','.join(['?']*len(self.insert_str.split(' ')))
 		insert_sql = f'''INSERT INTO {self.table}({self.insert_str}) VALUES({qms})'''
 		self.cur.execute(insert_sql, args) 
-		self.con.commit()
-		# try:
-		# 	self.con.commit()
-		# except Exception as e:
-		# 	print(e)
-		# 	print("commit failed, try again with next commit")
+		try:
+			self.con.commit()
+		except Exception as e:
+			print(e)
+			print("commit failed, try again")
+
 
 ###
 ## tqdm product wrapper

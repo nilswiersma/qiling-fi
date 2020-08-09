@@ -1,65 +1,63 @@
 # qiling-fi
 
-Using qiling to build simple scripts simulating fault models.
+Using qiling to build simple scripts simulating fault injection models. 
+Some FI extensions in `QilingFi.py`.
+Script template with `TODO`s in `qiling_template.py`.
 
 Tested in Ubuntu 18.04 and WSL Ubuntu 18.04
 
-# Set up qiling
+# Set up qiling and other packages
 
 https://docs.qiling.io/en/latest/install/
 
 ```
-python3 -m venv venv-wsl
+python3 -m venv venv
 . venv\bin\activate
 python -m pip install qiling --pre
 python -m pip install tqdm
 ```
 
-# Set up arm compiler
 
+# Compile ifelse.c, generate inline disassembly
+
+Set up arm compiler:
 ```
 apt install gcc-8-arm-linux-gnueabi
 ```
 
-# Compile ifelse.c
-
+Compile and dump:
 ```
+cd ifelse
 arm-linux-gnueabi-gcc-8 -static -g ifelse.c -o ifelse
-```
-
-Create inline assembly dump:
-
-```
 arm-linux-gnueabi-objdump -S ifelse > ifelse.objdump
 ```
 
 `ifelse.objdump` can be used to very conveniently find addresses etc.
 
-# Run focused random
+# Run ifelse with different fault models
 
-!!! BELOW OUTDATED !!!
-
-```
-python3 ifelse_focused_random.py
-```
-
-One hook:
+Some example fault models in `fault_models.py`.
+Testing them on the `ifelse` binary:
 
 ```
-ql.hook_code(print_asm)
-```
-Uses capstone to decompile portions of the binary, useful for tracing
-
-Patch `fi_addr` with `fi_random_bytes`.
-
-Each run uses `patch` to fill a random address of the `main` block of `ifelse` with random bytes. Data is collected in `ifelse.sqlite`. 
-
-While executing counters are printed:
-```
-[11038] FREE_BEER: 286 | NO_BEER: 1465 | EXCEPTION: 3845
+python3 ifelse.py singlebit
+python3 ifelse.py nop
+python3 ifelse.py random
 ```
 
-Database contains bit more info:
+Pause with CTRL-C.
+
+## Some details
+`ql.patch` to patch the binary with the faulty instruction.
+
+`ql.hook_code(asm_trace)` to use capstone to decompile portions of the binary, useful for tracing
+
+While executing counters and progress are printed using tqdm:
+```
+FREE_BEER: 1 | NO_BEER: 106 | EXCEPTION: 40:  26%|█████████▍                          | 174/661 [00:28<01:19,  6.12it/s]
+```
+
+Stuff is logged to sqlite3 database:
 ![database.png](database.png)
 
 # SQL queries and results with random bytes
@@ -92,13 +90,6 @@ SELECT exception,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log
 | Write to write-protected memory (UC_ERR_WRITE_PROT) |  281   | 0.0164125927223877    |
 | _hook_intr_cb : catched == False                    |  1     | 5.84078032825185e-05  |
 
-
-# Single bit flip and single nop
-
-```
-python3 ifelse_singlebit_sequential.py
-python3 ifelse_nop_sequential.py
-```
 
 # Annotated objdump
 
