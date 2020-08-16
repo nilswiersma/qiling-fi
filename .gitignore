@@ -1,7 +1,7 @@
 *.sqlite
 *.sqlite-journal
-.sqlite-shm
-.sqlite-wal
+*.sqlite-shm
+*.sqlite-wal
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
