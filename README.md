@@ -16,7 +16,7 @@ python -m pip install qiling --pre
 python -m pip install tqdm
 ```
 
-Can also recommend getting https://sqlitebrowser.org/dl/
+Can also recommend getting the latest/nightly https://sqlitebrowser.org/dl/
 
 ## Snapshots
 
