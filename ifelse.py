@@ -85,7 +85,7 @@ def main_singlebit():
         else:
             pass
 
-        db.add_row(COUNTER, data, category, ins[::-1].hex(), disasm, exception, '\n'.join(ql.trace))
+        db.add_row(data, category, ins[::-1].hex(), disasm, exception, '\n'.join(ql.trace))
 
         # print(f'[{COUNTER}] FREE_BEER: {FREE_BEER} | NO_BEER: {NO_BEER} | EXCEPTION: {EXCEPTION}', end='\n' if console else '\r')
         if terminal_logging:
@@ -151,7 +151,7 @@ def main_nop():
         else:
             pass
 
-        db.add_row(COUNTER, data, category, ins[::-1].hex(), disasm, exception, '\n'.join(ql.trace))
+        db.add_row(data, category, ins[::-1].hex(), disasm, exception, '\n'.join(ql.trace))
 
         # print(f'[{COUNTER}] FREE_BEER: {FREE_BEER} | NO_BEER: {NO_BEER} | EXCEPTION: {EXCEPTION}', end='\n' if console else '\r')
         if terminal_logging:
@@ -215,7 +215,7 @@ def main_random():
         else:
             pass
 
-        db.add_row(COUNTER, data, category, ins[::-1].hex(), disasm, exception, '\n'.join(ql.trace))
+        db.add_row(data, category, ins[::-1].hex(), disasm, exception, '\n'.join(ql.trace))
 
         # print(f'[{COUNTER}] FREE_BEER: {FREE_BEER} | NO_BEER: {NO_BEER} | EXCEPTION: {EXCEPTION}', end='\n' if console else '\r')
         if terminal_logging:
@@ -244,8 +244,8 @@ if __name__ == "__main__":
 
     DBNAME = f'{os.path.splitext(__file__)[0]}-{sys.argv[1]}.sqlite'
     TABLE = f'log_{int(time.time()*1000)}'
-    CREATE = "id integer PRIMARY KEY, data text, category int, random text, disasm text, exception text, trace text"
-    INSERT = "id, data, category, random, disasm, exception, trace"
+    CREATE = "id integer PRIMARY KEY AUTOINCREMENT, data text, category int, random text, disasm text, exception text, trace text"
+    INSERT = "data, category, random, disasm, exception, trace"
     ARCH = capstone.CS_ARCH_ARM
     MODE = capstone.CS_MODE_ARM
 
