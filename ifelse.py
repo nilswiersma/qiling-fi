@@ -244,8 +244,8 @@ if __name__ == "__main__":
 
     DBNAME = f'{os.path.splitext(__file__)[0]}-{sys.argv[1]}.sqlite'
     TABLE = f'log_{int(time.time()*1000)}'
-    CREATE = "id integer PRIMARY KEY AUTOINCREMENT, data text, category int, random text, disasm text, exception text, trace text"
-    INSERT = "data, category, random, disasm, exception, trace"
+    CREATE = "id integer PRIMARY KEY AUTOINCREMENT, data text, category int, ins text, disasm text, exception text, trace text"
+    INSERT = "data, category, ins, disasm, exception, trace"
     ARCH = capstone.CS_ARCH_ARM
     MODE = capstone.CS_MODE_ARM
 
