@@ -25,7 +25,7 @@ console = False
 terminal_logging = True
 
 MAIN_START = 0x102ec
-MAIN_END   = 0x10334
+TRACE_END  = 0x10308
 
 def main_singlebit():
     NO_BEER = 0
@@ -50,7 +50,7 @@ def main_singlebit():
             console=console, stdin=StringBuffer(), stdout=StringBuffer(),
 
             # QilingFi args
-            trace_start=MAIN_START, trace_end=MAIN_END,
+            trace_start=MAIN_START, trace_end=TRACE_END,
             fi_model=flip_single_bit, fi_args=fi_args,
             md=md
             )
@@ -116,7 +116,7 @@ def main_nop():
             console=console, stdin=StringBuffer(), stdout=StringBuffer(),
 
             # QilingFi args
-            trace_start=MAIN_START, trace_end=MAIN_END,
+            trace_start=MAIN_START, trace_end=TRACE_END,
             fi_model=set_word, fi_args=fi_args,
             md=md
             )
@@ -180,7 +180,7 @@ def main_random():
             console=console, stdin=StringBuffer(), stdout=StringBuffer(),
 
             # QilingFi args
-            trace_start=MAIN_START, trace_end=MAIN_END,
+            trace_start=MAIN_START, trace_end=TRACE_END,
             fi_model=random_word, fi_args=fi_args,
             md=md
             )

@@ -15,6 +15,8 @@ python -m pip install qiling --pre
 python -m pip install tqdm
 ```
 
+Can also recommend getting https://sqlitebrowser.org/dl/
+
 ## snapshots
 
 Snapshots are not in the pip version yet, need to build the qiling package yourself from dev to use:
@@ -28,9 +30,6 @@ python3 setup.py install
 ```
 
 See also: https://docs.qiling.io/en/latest/install/
-
-# Set up qiling and other packages
-
 
 # Example ifelse.c ARM32 program
 
@@ -104,8 +103,18 @@ python3 ifelse.py random
 
 Pause with CTRL-C.
 
+## Run ifelse with random, using snapshots and multiprocessing
+
+Waaaaaay (10x) faster (50,000 runs in 15 minutes) than single core (using 4 cores instead) and without snapshots:
+
+```
+python3 ifelse_multisnaps.py
+```
+
+Sort of pause with CTRL-C, try to gracefully kill jobs as well.
+
 ## Some details
-`QilingFi` extends some functionality of `Qiling`, by adding some hooks and variables for recording the execution trace and injecting faults. `ql.patch` is used to patch the binary with the faulty instruction. capstone is used to decompile portions of the binary, useful for tracing
+`QilingFi` extends some functionality of `Qiling`, by adding some hooks and variables for recording the execution trace and injecting faults. `ql.patch` is used to patch the binary with the faulty instruction. capstone is used to decompile portions of the binary, useful for tracing. `ProcessPoolExecutor` is used to spawn multiple instances from a snapshot.
 
 While executing counters and progress can be printed using tqdm:
 ```
@@ -120,12 +129,13 @@ Snapshots can be saved and restored to speed up multiple fault simulations, usin
 
 ## Some numbers
 Timings reported by tqdm, 1000 randomized instructions at single address (0x102f8), no sqlite3 logging:
-| Configuration          |Seconds| it/s |
-|------------------------|-------|------|
-| Snapshot + process_map | 00:19 | 51.9 |
-| Snapshot               | 00:33 | 29.4 |
-| Snapshot + thread_map  | 00:40 | 24.7 |
-| No snapshot            | 02:25 | 06.8 |
+| Configuration                               |Seconds| it/s |
+|---------------------------------------------|-------|------|
+| Snapshot + ProcessPoolExecutor + sqlite WAL | 00:16 | 60.7 |
+| Snapshot + process_map                      | 00:19 | 51.9 |
+| Snapshot                                    | 00:33 | 29.4 |
+| Snapshot + thread_map                       | 00:40 | 24.7 |
+| No snapshot                                 | 02:25 | 06.8 |
 
 <!-- 
 # Annotated objdump
@@ -157,17 +167,42 @@ SELECT data,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log_1596
 |NO BEER\x0a               | 1786  | 0.123334023893378     |
 |NO BEER\x0aFREE BEER\x0a  | 130   | 0.00897728057454596   |
 
+FREE BEER per randomized addr:
+```
+SELECT addr,data,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log_combined GROUP BY addr, data
+```
+|  Output                  | Count |  Frac                    |
+|--------------------------|-------|--------------------------|
+| 102f8                    | 1189  | 0.0764286173426753       |
+| 102f8 FREE BEER\x0a      | 1917  | 0.123224272031883        |
+| 102f8 NO BEER\x0a        |    6  | 0.000385678472713248     |
+| 102fc                    | 1197  | 0.076942855306293        |
+| 102fc FREE BEER\x0a      |    4  | 0.000257118981808832     |
+| 102fc NO BEER\x0a        | 1911  | 0.12283859355917         |
+| 10300                    | 1178  | 0.075721540142701        |
+| 10300 FREE BEER\x0a      | 1927  | 0.123867069486405        |
+| 10300 NO BEER\x0a        |    6  | 0.000385678472713248     |
+| 10304                    | 1229  | 0.0789998071607636       |
+| 10304 FREE BEER\x0a      |  121  | 0.00777784919971717      |
+| 10304 NO BEER\x0a        | 1761  | 0.113196631741338        |
+| 10308                    | 1212  | 0.0779070514880761       |
+| 10308 NO BEER\x0a        | 1899  | 0.122067236613743        |
+
 Exception counts:
 ```
 SELECT exception,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log_1596811491505 GROUP BY exception
 ```
 |  Exception                                          |  Count |  Frac                 |
 |-----------------------------------------------------|--------|-----------------------|
-| 	                                                  |  11261 | 0.657730272764441     |
+| 	                                                   |  11261 | 0.657730272764441     |
 | Invalid instruction (UC_ERR_INSN_INVALID)           |  1821  | 0.106360609777466     |
 | Invalid memory read (UC_ERR_READ_UNMAPPED)          |  2723  | 0.159044448338298     |
 | Invalid memory write (UC_ERR_WRITE_UNMAPPED)        |  1034  | 0.0603936685941242    |
 | Write to write-protected memory (UC_ERR_WRITE_PROT) |  281   | 0.0164125927223877    |
 |  hook_intr_cb : catched == False                    |  1     | 5.84078032825185e-05  |
 
+# More pictures
+
+Result of random instructions at different addresses in a bar plot:
+![free_beer_random_bar.png](free_beer_random_bar.png)
 

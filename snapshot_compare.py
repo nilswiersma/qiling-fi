@@ -26,7 +26,7 @@ console = False
 terminal_logging = False
 
 MAIN_START = 0x102ec
-TRACE_END   = 0x10308
+TRACE_END  = 0x10308
 
 def main_random(*args):
     exception = ''

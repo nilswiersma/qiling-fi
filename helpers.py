@@ -57,10 +57,6 @@ class MyDB():
 	def add_row(self, *args):
 		if len(args) == 1 and type(args[0]) == dict:
 			insert_sql = f'''INSERT INTO {self.table}({','.join(args[0].keys())}) VALUES({','.join(len(args[0].keys())*['?'])})'''
-			print(insert_sql)
-			print(type(args[0].values()))
-			for x in zip( list(args[0].keys()), list(map(type, args[0].values())), list(args[0].values()) ):
-				print(x)
 			self.cur.execute(insert_sql, list(args[0].values()))
 		else:
 			qms = ','.join(['?']*len(self.insert_str.split(' ')))
