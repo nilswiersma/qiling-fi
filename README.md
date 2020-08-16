@@ -1,4 +1,3 @@
-# qiling-fi
 
 Using qiling to build simple scripts simulating fault injection models. 
 Some FI extensions in `QilingFi.py`.
@@ -6,10 +5,9 @@ Script template with `TODO`s in `qiling_template.py`.
 
 Tested in Ubuntu 18.04 and WSL Ubuntu 18.04
 
-# Set up qiling and other packages
+# Setup etc.
 
-https://docs.qiling.io/en/latest/install/
-
+Depends on `qiling` (obviously) and `tqdm` (for progress bars). To install:
 ```
 python3 -m venv venv
 . venv\bin\activate
@@ -17,27 +15,86 @@ python -m pip install qiling --pre
 python -m pip install tqdm
 ```
 
+## snapshots
 
-# Compile ifelse.c, generate inline disassembly
+Snapshots are not in the pip version yet, need to build the qiling package yourself from dev to use:
+```
+apt install python3-pip git cmake
+git clone https://github.com/qilingframework/qiling qiling-dev
+cd qiling-dev
+python3 -m venv venv 
+pip install -r requirements.txt
+python3 setup.py install 
+```
 
-Set up arm compiler:
+See also: https://docs.qiling.io/en/latest/install/
+
+# Set up qiling and other packages
+
+
+# Example ifelse.c ARM32 program
+
+A simple if check to test with some faults:
+
+```
+volatile int flag = 0;
+if (flag == 0)
+	printf("NO BEER\n");
+else
+	printf("FREE BEER\n");
+```
+
+## Setup etc.
+
+Set up arm linux compiler:
 ```
 apt install gcc-8-arm-linux-gnueabi
 ```
 
-Compile and dump:
+Compile statically to not rely on external libs (although Qiling has very convenient functions for this!), and dump with C code inlined:
 ```
 cd ifelse
 arm-linux-gnueabi-gcc-8 -static -g ifelse.c -o ifelse
 arm-linux-gnueabi-objdump -S ifelse > ifelse.objdump
 ```
 
-`ifelse.objdump` can be used to very conveniently find addresses etc.
+`ifelse.objdump` can be used to very conveniently find addresses etc:
+```
+000102ec <main>:
+#include <stdio.h>
 
-# Run ifelse with different fault models
+int main() {
+   102ec:	e92d4800 	push	{fp, lr}
+   102f0:	e28db004 	add	fp, sp, #4
+   102f4:	e24dd008 	sub	sp, sp, #8
+	volatile int flag = 0;
+   102f8:	e3a03000 	mov	r3, #0
+   102fc:	e50b3008 	str	r3, [fp, #-8]
+	if (flag == 0)
+   10300:	e51b3008 	ldr	r3, [fp, #-8]
+   10304:	e3530000 	cmp	r3, #0
+   10308:	1a000002 	bne	10318 <main+0x2c>
+		printf("NO BEER\n");
+   1030c:	e59f001c 	ldr	r0, [pc, #28]	; 10330 <main+0x44>
+   10310:	eb001dad 	bl	179cc <_IO_puts>
+   10314:	ea000001 	b	10320 <main+0x34>
+	else
+		printf("FREE BEER\n");
+   10318:	e59f0014 	ldr	r0, [pc, #20]	; 10334 <main+0x48>
+   1031c:	eb001daa 	bl	179cc <_IO_puts>
+	return 0;
+   10320:	e3a03000 	mov	r3, #0
+}
+   10324:	e1a00003 	mov	r0, r3
+   10328:	e24bd004 	sub	sp, fp, #4
+   1032c:	e8bd8800 	pop	{fp, pc}
+```
+
+## Run ifelse with different fault models
 
 Some example fault models in `fault_models.py`.
-Testing them on the `ifelse` binary:
+Example on how to use them in `ifelse.py`.
+Testing the models on the `ifelse` binary:
 
 ```
 python3 ifelse.py singlebit
@@ -48,17 +105,40 @@ python3 ifelse.py random
 Pause with CTRL-C.
 
 ## Some details
-`ql.patch` to patch the binary with the faulty instruction.
+`QilingFi` extends some functionality of `Qiling`, by adding some hooks and variables for recording the execution trace and injecting faults. `ql.patch` is used to patch the binary with the faulty instruction. capstone is used to decompile portions of the binary, useful for tracing
 
-`ql.hook_code(asm_trace)` to use capstone to decompile portions of the binary, useful for tracing
-
-While executing counters and progress are printed using tqdm:
+While executing counters and progress can be printed using tqdm:
 ```
 FREE_BEER: 1 | NO_BEER: 106 | EXCEPTION: 40:  26%|█████████▍                          | 174/661 [00:28<01:19,  6.12it/s]
 ```
 
 Stuff is logged to sqlite3 database:
 ![database.png](database.png)
+
+# Snapshots and multiprocessing
+Snapshots can be saved and restored to speed up multiple fault simulations, using `ql.save` and `ql.restore`. Multiple fault simulations can be performed in parallel to further speed up the simulations, in the example `ifelse_snapshot_compare.py` below done using [tqdm's process_map](https://tqdm.github.io/docs/contrib.concurrent/).
+
+## Some numbers
+Timings reported by tqdm, 1000 randomized instructions at single address (0x102f8), no sqlite3 logging:
+| Configuration          |Seconds| it/s |
+|------------------------|-------|------|
+| Snapshot + process_map | 00:19 | 51.9 |
+| Snapshot               | 00:33 | 29.4 |
+| Snapshot + thread_map  | 00:40 | 24.7 |
+| No snapshot            | 02:25 | 06.8 |
+
+<!-- 
+# Annotated objdump
+
+Script to parse sqlite db and add notes to the objdump (set the right TABLE_NAME manually):
+```
+python annotate_objdump.py
+```
+
+Example outputs added to repo, see also screenshot below:
+![free_beer_flip.png](free_beer_flip.png)
+
+ -->
 
 # SQL queries and results with random bytes
 
@@ -88,39 +168,6 @@ SELECT exception,count(id),1.0*count(id)/(sum(count(*)) over()) AS frac FROM log
 | Invalid memory read (UC_ERR_READ_UNMAPPED)          |  2723  | 0.159044448338298     |
 | Invalid memory write (UC_ERR_WRITE_UNMAPPED)        |  1034  | 0.0603936685941242    |
 | Write to write-protected memory (UC_ERR_WRITE_PROT) |  281   | 0.0164125927223877    |
-| _hook_intr_cb : catched == False                    |  1     | 5.84078032825185e-05  |
+|  hook_intr_cb : catched == False                    |  1     | 5.84078032825185e-05  |
 
 
-# Annotated objdump
-
-Script to parse sqlite db and add notes to the objdump (set the right TABLE_NAME manually):
-```
-python annotate_objdump.py
-```
-
-Example outputs added to repo, see also screenshot below:
-![free_beer_flip.png](free_beer_flip.png)
-
-
-# 1000 randomized ifelse with and without snapshots
-
-Without:
-
-```
-100%|███████████████████████████████████████████████████████████████████████████████| 1000/1000 [02:26<00:00,  6.84it/s]
-```
-
-With:
-```
-100%|███████████████████████████████████████████████████████████████████████████████| 1000/1000 [00:33<00:00, 29.45it/s]
-```
-
-With snapshots and tqdm thread_map:
-```
-100%|███████████████████████████████████████████████████████████████████████████████| 1000/1000 [00:40<00:00, 24.74it/s]
-```
-
-With snapshots and tqdm process_map:
-```
-100%|███████████████████████████████████████████████████████████████████████████████| 1000/1000 [00:19<00:00, 51.93it/s]
-```
