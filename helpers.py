@@ -42,7 +42,13 @@ class MyDB():
 		self.cur = self.con.cursor()
 		create_sql = f"CREATE TABLE {self.table}({self.create_str})"
 		print(create_sql)
-		self.cur.execute(create_sql)
+		try:
+			self.cur.execute(create_sql)
+		except sqlite3.OperationalError as e:
+			if str(e) == f'table {self.table} already exists':
+				pass
+			else:
+				raise e
 		self.con.commit()
 		
 	def add_row(self, *args):
