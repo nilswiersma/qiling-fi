@@ -27,7 +27,7 @@ terminal_logging = True
 MAIN_START = 0x102ec
 MAIN_END   = 0x10334
 
-def main_singlebit(db, md, tqdm_it):
+def main_singlebit():
     NO_BEER = 0
     FREE_BEER = 0
     EXCEPTION = 0
@@ -92,7 +92,7 @@ def main_singlebit(db, md, tqdm_it):
             tqdm_it.tqdm.write(f'{addr:x} | {ins[::-1].hex()} | {disasm} | {data} | {exception}')
             tqdm_it.tqdm.set_description(f'FREE_BEER: {FREE_BEER} | NO_BEER: {NO_BEER} | EXCEPTION: {EXCEPTION}')
 
-def main_nop(db, md, tqdm_it):
+def main_nop():
     NO_BEER = 0
     FREE_BEER = 0
     EXCEPTION = 0
@@ -158,7 +158,7 @@ def main_nop(db, md, tqdm_it):
             tqdm_it.tqdm.write(f'{addr:x} | {ins[::-1].hex()} | {disasm} | {data} | {exception}')
             tqdm_it.tqdm.set_description(f'FREE_BEER: {FREE_BEER} | NO_BEER: {NO_BEER} | EXCEPTION: {EXCEPTION}')
 
-def main_random(db, md, tqdm_it):
+def main_random():
     NO_BEER = 0
     FREE_BEER = 0
     EXCEPTION = 0
@@ -287,7 +287,7 @@ if __name__ == "__main__":
     original_sigint = signal.getsignal(signal.SIGINT)
     signal.signal(signal.SIGINT, pause_or_quit)
 
-    main(db, md, tqdm_it)
+    main()
 
     # Commit one last time in case anything was lingering
     db.con.commit()
