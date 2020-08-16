@@ -15,7 +15,7 @@ python -m pip install qiling --pre
 python -m pip install tqdm
 ```
 
-## snapshots
+## Snapshots
 
 Snapshots are not in the pip version yet, need to build the qiling package yourself from dev to use:
 ```
@@ -29,10 +29,7 @@ python3 setup.py install
 
 See also: https://docs.qiling.io/en/latest/install/
 
-# Set up qiling and other packages
-
-
-# Example ifelse.c ARM32 program
+# Example: ifelse.c ARM32 program
 
 A simple if check to test with some faults:
 
