@@ -28,7 +28,7 @@ terminal_logging = False
 MAIN_START = 0x102ec
 TRACE_END   = 0x10308
 
-def pool_f(*args):
+def main_random(*args):
     exception = ''
     ql2 = QilingFi(
         # Qiling args
@@ -66,20 +66,6 @@ def pool_f(*args):
     else:
         tqdm.write(str((data, exception)))
 
-def pause_or_quit(signum, frame):
-    # https://stackoverflow.com/questions/18114560/python-catch-ctrl-c-command-prompt-really-want-to-quit-y-n-resume-executi
-    # restore the original signal handler as otherwise evil things will happen
-    # in raw_input when CTRL+C is pressed, and our signal handler is not re-entrant
-    signal.signal(signal.SIGINT, original_sigint)
-
-    try:
-        input('Script paused, hit CTRL-C again to quit, Enter to continue > ')
-    except KeyboardInterrupt:
-        print('Killing script')
-        sys.exit(1)
-
-    # restore the exit gracefully handler here    
-    signal.signal(signal.SIGINT, pause_or_quit)
 
 if __name__ == "__main__":
     if len(sys.argv) != 2 or sys.argv[1] not in ['simple', 'snapshot', 'snapshotmulti']: 
@@ -115,9 +101,9 @@ if __name__ == "__main__":
     ql.run()
 
     if sys.argv[1] == 'snapshotmulti':
-        ret = process_map(pool_f, range(NRUNS))
+        ret = process_map(main_random, range(NRUNS))
         for x in ret:
             print(x)
     else:
         for _ in trange(NRUNS):
-            pool_f()
+            main_random()
