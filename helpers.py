@@ -31,7 +31,7 @@ import sqlite3
 
 class MyDB():
 	"""Some sqlite convenience stuff"""
-	def __init__(self, dbname, table, create_str, insert_str):
+	def __init__(self, dbname, table, create_str, insert_str=None):
 		
 		self.dbname = dbname
 		self.table = table
@@ -39,6 +39,9 @@ class MyDB():
 		self.insert_str = insert_str
 
 		self.con = sqlite3.connect(self.dbname)
+
+		self.con.execute("pragma journal_mode=wal")
+
 		self.cur = self.con.cursor()
 		create_sql = f"CREATE TABLE {self.table}({self.create_str})"
 		print(create_sql)
@@ -52,14 +55,23 @@ class MyDB():
 		self.con.commit()
 		
 	def add_row(self, *args):
-		qms = ','.join(['?']*len(self.insert_str.split(' ')))
-		insert_sql = f'''INSERT INTO {self.table}({self.insert_str}) VALUES({qms})'''
-		self.cur.execute(insert_sql, args) 
+		if len(args) == 1 and type(args[0]) == dict:
+			insert_sql = f'''INSERT INTO {self.table}({','.join(args[0].keys())}) VALUES({','.join(len(args[0].keys())*['?'])})'''
+			print(insert_sql)
+			print(type(args[0].values()))
+			for x in zip( list(args[0].keys()), list(map(type, args[0].values())), list(args[0].values()) ):
+				print(x)
+			self.cur.execute(insert_sql, list(args[0].values()))
+		else:
+			qms = ','.join(['?']*len(self.insert_str.split(' ')))
+			insert_sql = f'''INSERT INTO {self.table}({self.insert_str}) VALUES({qms})'''
+			self.cur.execute(insert_sql, args)
+		
 		try:
 			self.con.commit()
 		except Exception as e:
 			print(e)
-			print("commit failed, try again")
+			print("commit failed, trying again next commit")
 
 
 ###
