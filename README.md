@@ -1,3 +1,4 @@
+# QilingFi
 
 Using qiling to build simple scripts simulating fault injection models. 
 Some FI extensions in `QilingFi.py`.
@@ -5,7 +6,7 @@ Script template with `TODO`s in `qiling_template.py`.
 
 Tested in Ubuntu 18.04 and WSL Ubuntu 18.04
 
-# Setup etc.
+## Setup etc.
 
 Depends on `qiling` (obviously) and `tqdm` (for progress bars). To install:
 ```
