@@ -10,10 +10,10 @@ Tested in Ubuntu 18.04 and WSL Ubuntu 18.04
 
 Depends on `qiling` (obviously) and `tqdm` (for progress bars). To install:
 ```
-python3 -m venv venv
+python3.9 -m venv venv
 . venv\bin\activate
-python -m pip install qiling --pre
-python -m pip install tqdm
+python3.9 -m pip install qiling --pre
+python3.9 -m pip install tqdm
 ```
 
 Can also recommend getting the latest/nightly https://sqlitebrowser.org/dl/
@@ -22,12 +22,12 @@ Can also recommend getting the latest/nightly https://sqlitebrowser.org/dl/
 
 Snapshots are not in the pip version yet, need to build the qiling package yourself from dev to use:
 ```
-apt install python3-pip git cmake
+apt install python3.9-pip git cmake
 git clone https://github.com/qilingframework/qiling qiling-dev
 cd qiling-dev
-python3 -m venv venv 
+python3.9 -m venv venv 
 pip install -r requirements.txt
-python3 setup.py install 
+python3.9 setup.py install 
 ```
 
 See also: https://docs.qiling.io/en/latest/install/
@@ -48,46 +48,48 @@ else
 
 Set up arm linux compiler:
 ```
-apt install gcc-8-arm-linux-gnueabi
+apt install gcc-10-arm-linux-gnueabi
 ```
 
 Compile statically to not rely on external libs (although Qiling has very convenient functions for this!), and dump with C code inlined:
 ```
 cd ifelse
-arm-linux-gnueabi-gcc-8 -static -g ifelse.c -o ifelse
+arm-linux-gnueabi-gcc-10 -static -g ifelse.c -o ifelse
 arm-linux-gnueabi-objdump -S ifelse > ifelse.objdump
 ```
 
 `ifelse.objdump` can be used to very conveniently find addresses etc:
 ```
-000102ec <main>:
+0010524 <main>:
 #include <stdio.h>
 
 int main() {
-   102ec:	e92d4800 	push	{fp, lr}
-   102f0:	e28db004 	add	fp, sp, #4
-   102f4:	e24dd008 	sub	sp, sp, #8
+   10524:	e92d4800 	push	{fp, lr}
+   10528:	e28db004 	add	fp, sp, #4
+   1052c:	e24dd008 	sub	sp, sp, #8
 	volatile int flag = 0;
-   102f8:	e3a03000 	mov	r3, #0
-   102fc:	e50b3008 	str	r3, [fp, #-8]
+   10530:	e3a03000 	mov	r3, #0
+   10534:	e50b3008 	str	r3, [fp, #-8]
 	if (flag == 0)
-   10300:	e51b3008 	ldr	r3, [fp, #-8]
-   10304:	e3530000 	cmp	r3, #0
-   10308:	1a000002 	bne	10318 <main+0x2c>
+   10538:	e51b3008 	ldr	r3, [fp, #-8]
+   1053c:	e3530000 	cmp	r3, #0
+   10540:	1a000002 	bne	10550 <main+0x2c>
 		printf("NO BEER\n");
-   1030c:	e59f001c 	ldr	r0, [pc, #28]	; 10330 <main+0x44>
-   10310:	eb001dad 	bl	179cc <_IO_puts>
-   10314:	ea000001 	b	10320 <main+0x34>
+   10544:	e59f001c 	ldr	r0, [pc, #28]	; 10568 <main+0x44>
+   10548:	eb001c9e 	bl	177c8 <_IO_puts>
+   1054c:	ea000001 	b	10558 <main+0x34>
 	else
 		printf("FREE BEER\n");
-   10318:	e59f0014 	ldr	r0, [pc, #20]	; 10334 <main+0x48>
-   1031c:	eb001daa 	bl	179cc <_IO_puts>
+   10550:	e59f0014 	ldr	r0, [pc, #20]	; 1056c <main+0x48>
+   10554:	eb001c9b 	bl	177c8 <_IO_puts>
 	return 0;
-   10320:	e3a03000 	mov	r3, #0
+   10558:	e3a03000 	mov	r3, #0
 }
-   10324:	e1a00003 	mov	r0, r3
-   10328:	e24bd004 	sub	sp, fp, #4
-   1032c:	e8bd8800 	pop	{fp, pc}
+   1055c:	e1a00003 	mov	r0, r3
+   10560:	e24bd004 	sub	sp, fp, #4
+   10564:	e8bd8800 	pop	{fp, pc}
+   10568:	00061aa8 	.word	0x00061aa8
+   1056c:	00061ab0 	.word	0x00061ab0
 ```
 
 ## Run ifelse with different fault models
@@ -97,9 +99,9 @@ Example on how to use them in `ifelse.py`.
 Testing the models on the `ifelse` binary:
 
 ```
-python3 ifelse.py singlebit
-python3 ifelse.py nop
-python3 ifelse.py random
+python3.9 ifelse.py singlebit
+python3.9 ifelse.py nop
+python3.9 ifelse.py random
 ```
 
 Pause with CTRL-C.
@@ -109,7 +111,7 @@ Pause with CTRL-C.
 Waaaaaay (10x) faster (50,000 runs in 15 minutes) than single core (using 4 cores instead) and without snapshots:
 
 ```
-python3 ifelse_multisnaps.py
+python3.9 ifelse_multisnaps.py
 ```
 
 Sort of pause with CTRL-C, try to gracefully kill jobs as well.
